@@ -35,10 +35,7 @@ server.route({
     method: 'GET',
     path: '/todos',
     handler: async (request, h) => {
-        console.log(request.query.orderBy)
-        console.log(getOrderBy(request.query.orderBy))
         const orderByName = getOrderBy(request.query.orderBy);
-
         if (request.query.filter === 'COMPLETE' || request.query.filter === 'INCOMPLETE') {
             const result = await db('todos_items').select().where('state',request.query.filter).orderBy(orderByName);
             return result;
@@ -46,6 +43,22 @@ server.route({
             const result = await db('todos_items').select().orderBy(orderByName);
             return result;
         }
+    }
+});
+
+server.route({
+    method: 'PATCH',
+    path: '/todo/{id}',
+    handler: async (request, h) => {
+        const old = await db('todos_items').where('id', request.params.id).select();
+
+        if (old[0].state == 'INCOMPLETE' && request.payload.state == 'COMPLETE') {
+            const time = new Date(Date.now()).toISOString();
+            const result = await db('todos_items').where('id', request.params.id).update({state:'COMPLETE', description:request.payload.description, completedAt:time}).returning('*');
+            return result[0];
+        }
+        const result = await db('todos_items').where('id', request.params.id).update({state:request.payload.state,description:request.payload.description}).returning('*');
+        return result[0];
     }
 });
 
