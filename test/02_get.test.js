@@ -19,8 +19,7 @@ describe('GET /todos', () => {
     it('responds with 200', async () => {
         const res = await server.inject({
             method: 'get',
-            url: '/todos',
-            payload: '{"description":"Test1"}'
+            url: '/todos?orderBy=DESCRIPTION',
         });
         console.log(res.payload);
         expect(res.statusCode).to.equal(200);

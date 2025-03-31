@@ -16,17 +16,36 @@ server.route({
     path: '/todos',
     handler: async (request, h) => {
         const time = new Date(Date.now()).toISOString();
-        const result = await db('todos_items').insert({state:'INCOMPLETE',description:request.payload.description,created_at:time}).returning('*');
+        const result = await db('todos_items').insert({state:'INCOMPLETE',description:request.payload.description,createdAt:time}).returning('*');
         return result[0];
     }
 });
+
+function getOrderBy(orderBy) {
+    if (orderBy == 'DESCRIPTION') {
+        return 'description';
+    }else if (orderBy == 'COMPLETED_AT') {
+        return 'completedAt';
+    }else {
+        return 'createdAt';
+    }
+}
 
 server.route({
     method: 'GET',
     path: '/todos',
     handler: async (request, h) => {
-        const result = await db('todos_items').select();
-        return result;
+        console.log(request.query.orderBy)
+        console.log(getOrderBy(request.query.orderBy))
+        const orderByName = getOrderBy(request.query.orderBy);
+
+        if (request.query.filter === 'COMPLETE' || request.query.filter === 'INCOMPLETE') {
+            const result = await db('todos_items').select().where('state',request.query.filter).orderBy(orderByName);
+            return result;
+        }else {
+            const result = await db('todos_items').select().orderBy(orderByName);
+            return result;
+        }
     }
 });
 

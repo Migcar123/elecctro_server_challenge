@@ -7,8 +7,8 @@ exports.up = function(knex) {
     table.increments('id');
     table.string('description');
     table.string('state').notNullable();
-    table.timestamp('created_at').notNullable();
-    table.timestamp('completed_at');
+    table.timestamp('createdAt').notNullable();
+    table.timestamp('completedAt');
   })
 };
 
