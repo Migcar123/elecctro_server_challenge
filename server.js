@@ -51,7 +51,6 @@ server.route({
     path: '/todo/{id}',
     handler: async (request, h) => {
         const old = await db('todos_items').where('id', request.params.id).select();
-
         if (old[0].state == 'INCOMPLETE' && request.payload.state == 'COMPLETE') {
             const time = new Date(Date.now()).toISOString();
             const result = await db('todos_items').where('id', request.params.id).update({state:'COMPLETE', description:request.payload.description, completedAt:time}).returning('*');
@@ -59,6 +58,17 @@ server.route({
         }
         const result = await db('todos_items').where('id', request.params.id).update({state:request.payload.state,description:request.payload.description}).returning('*');
         return result[0];
+    }
+});
+
+server.route({
+    method: 'DELETE',
+    path: '/todo/{id}',
+    handler: async (request, h) => {
+        const old = await db('todos_items').where('id', request.params.id).select();
+
+        const result = await db('todos_items').where('id', request.params.id).del().returning('*');
+        return 0;
     }
 });
 
