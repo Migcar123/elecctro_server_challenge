@@ -4,6 +4,9 @@ const Lab = require('@hapi/lab');
 const { expect } = require('@hapi/code');
 const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
 const { init } = require('../server');
+const knex = require('knex');
+const knexfile = require('../knexfile');
+const db = knex(knexfile.development);
 
 describe('PATCH /todo', () => {
     let server;
@@ -17,12 +20,40 @@ describe('PATCH /todo', () => {
     });
 
     it('responds with 200', async () => {
+        const time = new Date(Date.now()).toISOString();
+        await db('todos_items').insert({id:1,state:'INCOMPLETE',description:'Test3',createdAt:time});
         const res = await server.inject({
             method: 'patch',
             url: '/todo/1',
-            payload: '{"description":"Test2","state":"COMPLETE"}'
+            payload: '{"description":"Test3","state":"COMPLETE"}'
         });
-        console.log(res.payload);
+        await db('todos_items').where('id', 1).del();
         expect(res.statusCode).to.equal(200);
+    });
+
+    it('changes state', async () => {
+        const time = new Date(Date.now()).toISOString();
+        await db('todos_items').insert({id:1,state:'INCOMPLETE',description:'Test3',createdAt:time});
+        const res = await server.inject({
+            method: 'patch',
+            url: '/todo/1',
+            payload: '{"description":"Test3","state":"COMPLETE"}'
+        });
+        const selectresult = await db('todos_items').where('id', 1).select();
+        await db('todos_items').where('id', 1).del();
+        expect(selectresult[0].state).to.equal('COMPLETE');
+    });
+
+    it('creates completedat when it changes state', async () => {
+        const time = new Date(Date.now()).toISOString();
+        await db('todos_items').insert({id:1,state:'INCOMPLETE',description:'Test3',createdAt:time});
+        const res = await server.inject({
+            method: 'patch',
+            url: '/todo/1',
+            payload: '{"description":"Test3","state":"COMPLETE"}'
+        });
+        const selectresult = await db('todos_items').where('id', 1).select();
+        await db('todos_items').where('id', 1).del();
+        expect(selectresult[0].completedAt).exist();
     });
 });

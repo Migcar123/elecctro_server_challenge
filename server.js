@@ -48,6 +48,7 @@ function getOrderBy(orderBy) {
     }
 }
 
+//TODO retrun some error code if bad query values
 server.route({
     method: 'GET',
     path: '/todos',
@@ -56,7 +57,7 @@ server.route({
         if (request.query.filter === 'COMPLETE' || request.query.filter === 'INCOMPLETE') {
             const result = await db('todos_items').select().where('state',request.query.filter).orderBy(orderByName);
             return result;
-        }else {
+        }else if (request.query.filter === 'ALL' || typeof request.query.filter == "undefined"){
             const result = await db('todos_items').select().orderBy(orderByName);
             return result;
         }
@@ -76,6 +77,10 @@ server.route({
     path: '/todo/{id}',
     handler: async (request, h) => {
         const old = await db('todos_items').where('id', request.params.id).select();
+
+        if (old.length != 1) {return h.response('To-do item does not exist.').code(404);}
+        if (old[0].state == 'COMPLETE' && typeof request.payload.description != "undefined") {return h.response('To-do item is complete, you cannot change description.').code(400);}
+
         if (old[0].state == 'INCOMPLETE' && request.payload.state == 'COMPLETE') {
             const time = new Date(Date.now()).toISOString();
             const result = await db('todos_items').where('id', request.params.id).update({state:'COMPLETE', description:request.payload.description, completedAt:time}).returning('*');
@@ -100,6 +105,7 @@ server.route({
     path: '/todo/{id}',
     handler: async (request, h) => {
         const old = await db('todos_items').where('id', request.params.id).select();
+        if (old.length != 1) {return h.response('To-do item does not exist.').code(404);}
 
         const result = await db('todos_items').where('id', request.params.id).del().returning('*');
         return h.response('').code(200);
