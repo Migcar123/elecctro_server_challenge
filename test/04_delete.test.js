@@ -40,4 +40,12 @@ describe('DELETE /todo', () => {
         const newselect = await db('todos_items').select();
         expect(newselect.length).to.equal(oldselect.length-1);
     });
+
+    it('returns correct error on non-existent item', async () => {
+        const res = await server.inject({
+            method: 'delete',
+            url: '/todo/1',
+        });
+        expect(res.statusCode).to.equal(404);
+    });
 });

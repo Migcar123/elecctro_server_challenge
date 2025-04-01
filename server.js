@@ -61,7 +61,6 @@ function getOrderBy(orderBy) {
     }
 }
 
-//TODO retrun some error code if bad query values
 server.route({
     method: 'GET',
     path: '/todos',
@@ -94,6 +93,7 @@ server.route({
 
         if (old.length != 1) {return h.response('To-do item does not exist.').code(404);}
         if (old[0].state == 'COMPLETE' && typeof request.payload.description != "undefined") {return h.response('To-do item is complete, you cannot change description.').code(400);}
+        if (typeof request.payload.description == "undefined" && typeof request.payload.description == "undefined") {return h.response('You must change either the state or description.').code(400);}
 
         if (old[0].state == 'INCOMPLETE' && request.payload.state == 'COMPLETE') {
             const time = new Date(Date.now()).toISOString();

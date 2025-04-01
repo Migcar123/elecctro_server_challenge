@@ -56,4 +56,25 @@ describe('PATCH /todo', () => {
         await db('todos_items').where('id', 1).del();
         expect(selectresult[0].completedAt).exist();
     });
+
+    it('returns correct error when changing description of completed item', async () => {
+        const time = new Date(Date.now()).toISOString();
+        await db('todos_items').insert({id:1,state:'COMPLETE',description:'Test3',createdAt:time});
+        const res = await server.inject({
+            method: 'patch',
+            url: '/todo/1',
+            payload: '{"description":"Test3","state":"COMPLETE"}'
+        });
+        await db('todos_items').where('id', 1).del();
+        expect(res.statusCode).to.equal(400);
+    });
+
+    it('returns correct error on non-existent item', async () => {
+        const res = await server.inject({
+            method: 'patch',
+            url: '/todo/1',
+            payload: '{"description":"Test3","state":"COMPLETE"}'
+        });
+        expect(res.statusCode).to.equal(404);
+    });
 });
