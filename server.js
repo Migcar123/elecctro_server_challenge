@@ -6,6 +6,15 @@ const knex = require('knex');
 const knexfile = require('./knexfile');
 const db = knex(knexfile.development);
 
+const Joi = require('joi');
+const todo_itemSchema = Joi.object({
+    id: Joi.number().required(),
+    description: Joi.string().required(),
+    state: Joi.string().required(),
+    createdAt: Joi.date().iso().required(),
+    completedAt: Joi.date().iso().allow(null)
+});
+
 const server = Hapi.server({
     port: 3000,
     host: 'localhost'
@@ -18,6 +27,14 @@ server.route({
         const time = new Date(Date.now()).toISOString();
         const result = await db('todos_items').insert({state:'INCOMPLETE',description:request.payload.description,createdAt:time}).returning('*');
         return result[0];
+    },
+    options: {
+        validate: {
+            payload: Joi.object({description: Joi.string().required()})
+        },
+        response: {
+            schema: todo_itemSchema,
+        }
     }
 });
 
@@ -43,6 +60,14 @@ server.route({
             const result = await db('todos_items').select().orderBy(orderByName);
             return result;
         }
+    },
+    options: {
+        validate: {
+            query: Joi.object({filter: Joi.string(),orderBy: Joi.string()})
+        },
+        response: {
+            schema: Joi.array().items(todo_itemSchema),
+        }
     }
 });
 
@@ -58,6 +83,15 @@ server.route({
         }
         const result = await db('todos_items').where('id', request.params.id).update({state:request.payload.state,description:request.payload.description}).returning('*');
         return result[0];
+    },
+    options: {
+        validate: {
+            params: Joi.object({id: Joi.number().required()}),
+            payload: Joi.object({state: Joi.string(),description: Joi.string()})
+        },
+        response: {
+            schema: todo_itemSchema,
+        }
     }
 });
 
@@ -68,7 +102,15 @@ server.route({
         const old = await db('todos_items').where('id', request.params.id).select();
 
         const result = await db('todos_items').where('id', request.params.id).del().returning('*');
-        return 0;
+        return h.response('').code(200);
+    },
+    options: {
+        validate: {
+            params: Joi.object({id: Joi.number().required()})
+        },
+        response: {
+            schema: Joi.string().allow(''),
+        }
     }
 });
 
