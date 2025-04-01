@@ -2,7 +2,7 @@
   "name": "esc",
   "version": "1.0.0",
   "description": "Elecctro Server Challenge",
-  "main": "server.js",
+  "main": "main.js",
   "scripts": {
     "test": "lab"
   },
@@ -10,8 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/hapi": "^21.4.0",
+    "@hapi/inert": "^7.1.0",
+    "@hapi/vision": "^7.0.3",
+    "hapi-swagger": "^17.3.2",
     "joi": "^17.13.3",
     "knex": "^3.1.0",
+    "nodemon": "^3.1.9",
     "pg": "^8.14.1"
   },
   "devDependencies": {

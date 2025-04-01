@@ -1,6 +1,10 @@
 'use strict';
 
 const Hapi = require('@hapi/hapi');
+const Inert = require('@hapi/inert');
+const Vision = require('@hapi/vision');
+const HapiSwagger = require('hapi-swagger');
+const Pack = require('./package');
 
 const knex = require('knex');
 const knexfile = require('./knexfile');
@@ -20,6 +24,14 @@ const server = Hapi.server({
     host: 'localhost'
 });
 
+const swaggerOptions = {
+    info: {
+            title: 'Test API Documentation',
+            version: Pack.version,
+    },
+    documentationPath : '/docs'
+};
+
 server.route({
     method: 'POST',
     path: '/todos',
@@ -29,6 +41,7 @@ server.route({
         return result[0];
     },
     options: {
+        tags: ['api'],
         validate: {
             payload: Joi.object({description: Joi.string().required()})
         },
@@ -63,6 +76,7 @@ server.route({
         }
     },
     options: {
+        tags: ['api'],
         validate: {
             query: Joi.object({filter: Joi.string(),orderBy: Joi.string()})
         },
@@ -90,6 +104,7 @@ server.route({
         return result[0];
     },
     options: {
+        tags: ['api'],
         validate: {
             params: Joi.object({id: Joi.number().required()}),
             payload: Joi.object({state: Joi.string(),description: Joi.string()})
@@ -111,6 +126,7 @@ server.route({
         return h.response('').code(200);
     },
     options: {
+        tags: ['api'],
         validate: {
             params: Joi.object({id: Joi.number().required()})
         },
@@ -128,6 +144,14 @@ exports.init = async () => {
 
 exports.start = async () => {
 
+    await server.register([
+        Inert,
+        Vision,
+        {
+            plugin: HapiSwagger,
+            options: swaggerOptions
+        }
+    ]);
     await server.start();
     console.log(`Server running at: ${server.info.uri}`);
     return server;
