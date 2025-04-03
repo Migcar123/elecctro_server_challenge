@@ -3,5 +3,5 @@
 # How to run:
 configure knex - postgres connection details in knexfile.js
 ```
-node server
+node main.js
 ```
