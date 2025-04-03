@@ -23,6 +23,10 @@ describe('GET /todos', () => {
         const res = await server.inject({
             method: 'get',
             url: '/todos?orderBy=DESCRIPTION',
+            auth:{
+                strategy: 'my_jwt_strategy',
+                credentials: {userid:1},
+            }
         });
         expect(res.statusCode).to.equal(200);
     });
@@ -31,16 +35,24 @@ describe('GET /todos', () => {
         const res = await server.inject({
             method: 'get',
             url: '/todos',
+            auth:{
+                strategy: 'my_jwt_strategy',
+                credentials: {userid:1},
+            }
         });
         expect(JSON.parse(res.payload).length).to.equal(0);
     });
 
     it('returns one item', async () => {
         const time = new Date(Date.now()).toISOString();
-        await db('todos_items').insert({id:1,state:'INCOMPLETE',description:'Test2',createdAt:time});
+        await db('todos_items').insert({id:1,state:'INCOMPLETE',description:'Test2',createdAt:time,userid:1});
         const res = await server.inject({
             method: 'get',
             url: '/todos',
+            auth:{
+                strategy: 'my_jwt_strategy',
+                credentials: {userid:1},
+            }
         });
         await db('todos_items').where('id', 1).del();
         expect(JSON.parse(res.payload).length).to.equal(1);

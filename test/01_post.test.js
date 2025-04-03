@@ -23,7 +23,11 @@ describe('POST /todos', () => {
         const res = await server.inject({
             method: 'post',
             url: '/todos',
-            payload: '{"description":"Test1"}'
+            payload: '{"description":"Test1"}',
+            auth:{
+                strategy: 'my_jwt_strategy',
+                credentials: {userid:1},
+            }
         });
         await db('todos_items').where('id', JSON.parse(res.payload).id).del();
         expect(res.statusCode).to.equal(200);
@@ -34,7 +38,11 @@ describe('POST /todos', () => {
         const res = await server.inject({
             method: 'post',
             url: '/todos',
-            payload: '{"description":"Test1"}'
+            payload: '{"description":"Test1"}',
+            auth:{
+                strategy: 'my_jwt_strategy',
+                credentials: {userid:1},
+            }
         });
         const newselect = await db('todos_items').select();
         await db('todos_items').where('id', JSON.parse(res.payload).id).del();
